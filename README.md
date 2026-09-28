@@ -1,93 +1,65 @@
-# csghub
+[![Unit Tests](https://github.com/OpenCSGs/csghub/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/OpenCSGs/csghub/actions/workflows/unit_tests.yml)
+
+[![Join WeChat Slack](https://img.shields.io/badge/wechat-join_chat-white.svg?logo=wechat&style=social)](./docs/images/wechat-assistant-new.png)
+[![Join OpenCSG Slack](https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&style=social)](https://join.slack.com/t/opencsghq/shared_invite/zt-2fmtem7hs-s_RmMeoOIoF1qzslql2q~A)
+[![Join OpenCSG Discord](https://img.shields.io/badge/discord-join_chat-white.svg?logo=discord&style=social)](https://discord.gg/bXnu4C9BkR)
+[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20CSGHub%20Guru-006BFF?style=social)](https://gurubase.io/g/csghub)
+
+**[简体中文](README_zh.md) ∙ [日本語](README_jp.md) ∙ [한국어](README_kr.md) ∙ [Español](README_es.md)**
+
+## CSGHub
+
+CSGHub is an open-source platform designed for managing Large Language Models (LLM) assets, offering an efficient way to handle the entire LLM and their assets such as datasets, spaces and codes etc. It allows users to upload, download, store, verify, and distribute LLM assets like DeepSeek,Llama etc.via a web interface, `git` command line, a natural language Chatbot, or [CSGHub SDK](https://github.com/OpenCSGs/csghub-sdk).
+
+Additionally, CSGHub features microservice submodules and standardized OpenAPIs for seamless integration with existing systems. It aims to provide a user-friendly management platform specifically for LLM, which can be deployed On-Premise for secure, offline operation. Essentially, CSGHub serves as a private, on-premise version of Huggingface.
+
+![CSGHub](./docs/images/csghub_framework.png)
+
+### Key Features
+
+- Unified LLMs Management
+- Extensible Development Framework
+- Advanced Model Capabilities and Optimization
+- Space and Asset Management Assistant (Copilot)
+- Multi-Source Data Synchronization and Recommendation
+- Enterprise-Level Security and Access Control
+- On-Premises Deployment Solutions
+- E2E Data Processing and Intelligent Annotation System
+- Resilient High-Availability Architecture
+
+For further information, please see the [detailed introduction](./docs/detailed_intro_en.md) of CSGHub.
+
+### Demo Video
+
+To help users get up to speed with CSGHub, we have created a demo video that highlights its key features and how it works. You can watch it below or on [YouTube](https://www.youtube.com/watch?v=6LwGQ07qBxU)/[Bilibili](https://www.bilibili.com/video/BV1ynmxY3EXz/).
+<video width="658" height="432" src="https://github.com/user-attachments/assets/04f9fa17-9294-44c1-8c4a-4d7b9a5c66fa"></video>
+
+### Quick Start
+
+- For those looking to quickly explore, experiment with CSGHub's free SaaS version on the [OpenCSG website](https://opencsg.com). Refer to this [brief quick start guide](./docs/csghub_saas_en.md) to handle LLMs/datasets and deploy LLM applications with CSGHub SaaS interface.
+
+- **For users seeking further practice:** Please refer to the [CSGHub official documentation](https://opencsg.com/docs/csghub/101/introduction). The documentation currently provides installation methods using [Docker Compose](https://opencsg.com/docs/en/csghub/101/install/docker/overview) and [Helm Chart](https://opencsg.com/docs/en/csghub/101/install/kubernetes/overview).
+
+    _For more information and advanced tutorials, please refer to the [OpenCSG Documentation Center](https://opencsg.com/docs/intro)._
 
 
+### Quick Try
 
-## Getting started
+[![one-click deployment on Ali marketplace](https://img.alicdn.com/imgextra/i1/O1CN01YT0adL1pi2znO6BAJ_!!6000000005393-55-tps-208-40.svg)](https://market.aliyun.com/products/56014009/cmgj00068499.html?source=5176.29345612&userCode=swc743za)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+### Roadmap
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Discover the [roadmap](./docs/roadmap_en.md) outlining CSGHub's future direction.
 
-## Add your files
+### Release Notes
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+Refer to [release notes](./docs/release_notes.md) for information on feature improvements.
 
-```
-cd existing_repo
-git remote add origin https://gitlab.inone.nsfocus.com/tianshulab/csghub.git
-git branch -M main
-git push -uf origin main
-```
+### Meetings & Contributing
 
-## Integrate with your tools
+We warmly invite you to explore the [OpenCSG Community](https://github.com/OpenCSGs/community), where you'll find comprehensive guides on becoming a vital part of the project.
 
-* [Set up project integrations](https://gitlab.inone.nsfocus.com/tianshulab/csghub/-/settings/integrations)
-
-## Collaborate with your team
-
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- The process for joining [community meetings](https://github.com/OpenCSGs/community?tab=readme-ov-file#community-meeting), where you can engage with fellow members and share your ideas.
+- Refer to the [contribution guide](https://github.com/OpenCSGs/community/blob/main/guidelines/CONTRIBUTING_en.md) for strategies on how to contribute to the project.
+- [Contact us](https://github.com/OpenCSGs/community?tab=readme-ov-file#questions-and-issues) for any questions or issues, ensuring you're always supported throughout your journey with OpenCSG.
+- Refer to the [development guide](./docs/setup_en.md) for instructions on setting up the development environment.

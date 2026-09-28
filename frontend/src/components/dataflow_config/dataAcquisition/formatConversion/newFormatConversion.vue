@@ -1,0 +1,798 @@
+<template>
+  <div class="text-left w-full h-full pl-8 py-8 overflow-auto bg-white">
+    <div class="headerMenu flex items-center justify-start mb-5">
+      <SvgIcon class="w-5 h-5" name="dataflow_homeIcon" />
+      <SvgIcon class="w-5 h-5 mx-2" name="dataflow_homeIcon_divider" />
+      <p
+        class="text-gray-700 text-sm font-medium cursor-pointer hover:text-brand-700"
+        @click="router.back()"
+      >
+        {{ t("dataPipelines.formatConversion") }}
+      </p>
+      <SvgIcon class="w-5 h-5 mx-2" name="dataflow_homeIcon_divider" />
+      <p class="text-brand-700 text-sm font-medium">
+        {{ t("dataPipelines.dataFormatConversion") }}
+      </p>
+    </div>
+    <p class="text-gray-900 text-3xl font-medium">
+      {{ t("dataPipelines.dataFormatConversion") }}
+    </p>
+
+    <el-card shadow="never" class="mt-[20px]">
+      <TaskNamespaceFields
+        ref="taskNamespaceFieldsRef"
+        v-model:namespace-type="form.namespace_type"
+        v-model:namespace-uuid="form.namespace_uuid"
+        @loaded="onNamespacesLoaded"
+      />
+    </el-card>
+
+    <p class="text-gray-900 text-2xl font-medium mt-[20px]">
+      {{ t("dataPipelines.dataSource") }}
+    </p>
+    <el-form label-position="top" :rules="rules" :model="form" ref="formData">
+      <el-row :gutter="20" class="border rounded-md p-[10px]">
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+          <el-form-item prop="name" class="mt-[12px]">
+            <template #label>
+              <p class="text-gray-500 text-xs">
+                {{ t("dataPipelines.taskName") }}
+              </p>
+            </template>
+            <el-input
+              v-model="form.name"
+              :placeholder="`${t('dataPipelines.toInput')}${t(
+                'dataPipelines.taskName'
+              )}`"
+              clearable
+            >
+            </el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+          <el-form-item prop="owner" class="mt-[12px]">
+            <template #label>
+              <p class="text-gray-500 text-xs">
+                {{ t("dataPipelines.dataOwner") }}
+              </p>
+            </template>
+            <el-select
+              v-model="form.owner"
+              :placeholder="`${t('dataPipelines.toSel')}${t(
+                'dataPipelines.dataOwner'
+              )}`"
+              @change="getSelListData(true)"
+            >
+              <el-option
+                v-for="item in ownerPathOptions"
+                :key="item"
+                :label="item"
+                :value="item"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+          <el-form-item prop="from_csg_hub_repo_id" class="mt-[12px]">
+            <template #label>
+              <p class="text-gray-500 text-xs">
+                {{ t("dataPipelines.dataSource") }}
+              </p>
+            </template>
+            <el-select
+              v-model="form.from_csg_hub_repo_id"
+              :placeholder="`${t('dataPipelines.toSel')}${t(
+                'dataPipelines.dataSource'
+              )}`"
+              @change="fetchBranchList"
+            >
+              <el-option
+                v-for="item in selListData"
+                :key="item.id"
+                :label="item.name"
+                :value="item.path"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+          <el-form-item prop="from_csg_hub_dataset_branch" class="mt-[12px]">
+            <template #label>
+              <p class="text-gray-500 text-xs">
+                {{ t("dataPipelines.dataSourceBranch") }}
+              </p>
+            </template>
+            <el-select
+              v-model="form.from_csg_hub_dataset_branch"
+              :placeholder="t('dataPipelines.toSel')"
+            >
+              <el-option
+                v-for="item in branchList"
+                :key="item.name"
+                :label="item.name"
+                :value="item.name"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+          <el-form-item prop="des" class="mt-[12px]">
+            <template #label>
+              <p class="text-gray-500 text-xs">
+                {{ t("dataPipelines.taskDescription") }}
+              </p>
+            </template>
+            <el-input
+              v-model="form.des"
+              :placeholder="`${t('dataPipelines.toInput')}${t(
+                'dataPipelines.taskDescription'
+              )}`"
+              clearable
+            >
+            </el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <p class="text-gray-900 text-2xl font-medium my-4">
+        {{ t("dataPipelines.dataProcessingConfiguration") }}
+      </p>
+      <el-row
+        :gutter="20"
+        class="border rounded-md p-[10px] mb-4"
+        v-for="(group, groupKey) in dataObj"
+        :key="groupKey"
+      >
+        <!-- 源格式 -->
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+          <el-form-item prop="from_data_type" class="mt-[12px]">
+            <template #label>
+              <p class="text-gray-500 text-xs">
+                {{ t("dataPipelines.sourceFormat") }}
+              </p>
+            </template>
+            <el-radio-group
+              v-model="form.from_data_type"
+              @change="handleSourceChange(groupKey)"
+            >
+              <el-radio
+                v-for="format in group.from_format_types"
+                :key="`${groupKey}-from-${format.value}`"
+                :label="format.value"
+                size="large"
+              >
+                {{ format.label }}
+              </el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <!-- PDF 输入框 -->
+          <el-form-item
+            v-if="isPdfSelected(groupKey)"
+            prop="mineru_api_url"
+            class="mt-[12px]"
+          >
+            <template #label>
+              <p class="text-gray-500 text-xs">MinerU API URL</p>
+            </template>
+            <el-input
+              v-model="form.mineru_api_url"
+              :placeholder="mineru_api_url_placeholder"
+              clearable
+            >
+            </el-input>
+          </el-form-item>
+        </el-col>
+
+        <!-- 目标格式 -->
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+          <el-form-item prop="to_data_type" class="mt-[12px]">
+            <template #label>
+              <p class="text-gray-500 text-xs">
+                {{ t("dataPipelines.targetFormat") }}
+              </p>
+            </template>
+            <el-radio-group v-model="form.to_data_type">
+              <el-radio
+                v-for="format in group.to_format_types"
+                :key="`${groupKey}-to-${format.value}`"
+                :label="format.value"
+                :disabled="activeGroup !== groupKey"
+                size="large"
+              >
+                {{ format.label }}
+              </el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item
+            v-if="isPdfSelected(groupKey)"
+            prop="mineru_backend"
+            class="mt-[12px]"
+          >
+            <template #label>
+              <p class="text-gray-500 text-xs">Mineru Backend</p>
+            </template>
+            <el-input
+              v-model="form.mineru_backend"
+              :placeholder="mineru_backend_placeholder"
+              clearable
+            >
+            </el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <p class="text-gray-900 text-2xl font-medium my-2">
+        {{ t("dataPipelines.dataFlow") }}
+      </p>
+      <el-row :gutter="20" class="border rounded-md p-[10px]">
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+          <el-form-item prop="to_csg_hub_repo_id" class="mt-[12px]">
+            <template #label>
+              <p class="text-gray-500 text-xs">
+                {{ t("dataPipelines.dataFlow") }}
+              </p>
+            </template>
+            <el-select
+              v-model="form.to_csg_hub_repo_id"
+              :placeholder="`${t('dataPipelines.toSel')}${t(
+                'dataPipelines.dataFlow'
+              )}`"
+              clearable
+              @change="selListDataChange"
+            >
+              <el-option
+                v-for="item in dataFlowList"
+                :label="item.name"
+                :value="item.path"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+          <el-form-item
+            prop="to_csg_hub_dataset_default_branch"
+            class="mt-[12px]"
+          >
+            <template #label>
+              <p class="text-gray-500 text-xs">
+                {{ t("dataPipelines.dataFlowBranch") }}
+              </p>
+            </template>
+            <!-- <el-select
+              v-model="form.to_csg_hub_dataset_default_branch"
+              style="width: 100%"
+              :placeholder="t('dataPipelines.toSel')"
+            >
+              <el-option
+                v-for="item in to_branchList"
+                :key="item.name"
+                :label="item.name"
+                :value="item.name"
+              />
+            </el-select> -->
+            <el-input
+              v-model="form.to_csg_hub_dataset_default_branch"
+              :placeholder="`${t('dataPipelines.toInput')}${t(
+                'dataPipelines.dataFlowBranch'
+              )}`"
+              clearable
+            >
+            </el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+          <el-form-item prop="skip_meta" class="mt-[12px]">
+            <template #label>
+              <p class="text-gray-500 text-xs">
+                {{ t("dataPipelines.skipMeta") }}
+              </p>
+            </template>
+            <el-radio-group v-model="form.skip_meta">
+              <el-radio :label="true">{{ t("dataPipelines.yes") }}</el-radio>
+              <el-radio :label="false">{{ t("dataPipelines.no") }}</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
+
+    <SpaceResourceSelect
+      ref="spaceResourceFieldsRef"
+      class="mt-[24px]"
+      v-model:cluster-id="form.cluster_id"
+      v-model:space-resource-id="form.space_resource_id"
+      v-model:cluster-name="form.cluster_name"
+      v-model:resource-name="form.resource_name"
+    />
+    <StorageSizeField v-model="form.storage_size" />
+
+    <div class="flex items-center justify-end gap-2 pt-5 bottomBtnGroup">
+      <CsgButton
+        class="btn btn-primary btn-md whitespace-nowrap mr-[5px]"
+        v-loading="formLoading"
+        @click="submit"
+        :name="`${t('dataPipelines.startExecution')}`"
+      />
+      <CsgButton
+        class="btn btn-secondary-gray btn-md whitespace-nowrap"
+        @click="router.back()"
+        :name="t('dataPipelines.cancel')"
+      />
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { useRouter, useRoute } from "vue-router";
+import { ref, onMounted, inject, computed, watch } from "vue";
+import { ElMessage, ElLoading } from "element-plus";
+import useFetchApi from "@/packs/useFetchApi";
+import useUserStore from "@/stores/UserStore";
+import { useI18n } from "vue-i18n";
+import SpaceResourceSelect from "../dataSourceManagement/SpaceResourceSelect.vue";
+import StorageSizeField from "../dataSourceManagement/StorageSizeField.vue";
+import TaskNamespaceFields from "../../shared/TaskNamespaceFields.vue";
+import {
+  applyNamespaceFromLoaded,
+  buildTaskCreatePayload,
+  guardNamespaceBeforeSubmit,
+} from "@/packs/useDataflowNamespaces.js";
+import { useCookies } from "vue3-cookies";
+const { cookies } = useCookies();
+
+const router = useRouter();
+const route = useRoute();
+const { t, locale } = useI18n();
+const formLoading = ref(false);
+const userStore = useUserStore();
+const spaceResourceFieldsRef = ref(null);
+const taskNamespaceFieldsRef = ref(null);
+
+// 数据所有者可选项（个人 + 所属组织），借鉴数据处理任务创建
+const ownerPathOptions = ref([]);
+
+const onNamespacesLoaded = (payload) => {
+  applyNamespaceFromLoaded(form, payload);
+  ownerPathOptions.value = payload?.ownerPathOptions || [];
+  if (!form.value.owner && ownerPathOptions.value.length) {
+    form.value.owner = ownerPathOptions.value[0];
+    getSelListData(true);
+  }
+};
+
+// 表单
+const form = ref({
+  skip_meta: false,
+  owner: "",
+  namespace_type: "personal",
+  namespace_uuid: "",
+  cluster_id: "",
+  space_resource_id: "",
+  cluster_name: "",
+  resource_name: "",
+  storage_size: "4Gi",
+});
+// 表单校验
+const formData = ref();
+const rules = ref({
+  name: [
+    {
+      required: true,
+      message: `${t("dataPipelines.toInput")}${t("dataPipelines.taskName")}`,
+      trigger: "blur",
+    },
+  ],
+  des: [
+    {
+      required: false,
+      message: `${t("dataPipelines.toInput")}${t(
+        "dataPipelines.taskDescription"
+      )}`,
+      trigger: "blur",
+    },
+  ],
+  owner: [
+    {
+      required: true,
+      message: `${t("dataPipelines.toSel")}${t("dataPipelines.dataOwner")}`,
+      trigger: "change",
+    },
+  ],
+  from_csg_hub_repo_id: [
+    {
+      required: true,
+      message: `${t("dataPipelines.toSel")}${t("dataPipelines.dataSource")}`,
+      trigger: "blur",
+    },
+  ],
+  from_csg_hub_dataset_branch: [
+    {
+      required: true,
+      message: `${t("dataPipelines.toSel")}${t(
+        "dataPipelines.dataSourceBranch"
+      )}`,
+      trigger: "blur",
+    },
+  ],
+  from_data_type: [
+    {
+      required: true,
+      message: `${t("dataPipelines.toSel")}${t("dataPipelines.sourceFormat")}`,
+      trigger: "blur",
+    },
+  ],
+  to_data_type: [
+    {
+      required: true,
+      message: `${t("dataPipelines.toSel")}${t("dataPipelines.targetFormat")}`,
+      trigger: "blur",
+    },
+  ],
+  to_csg_hub_repo_id: [
+    {
+      required: true,
+      message: `${t("dataPipelines.toSel")}${t("dataPipelines.dataFlow")}`,
+      trigger: "change",
+    },
+  ],
+  to_csg_hub_dataset_default_branch: [
+    {
+      required: true,
+      message: `${t("dataPipelines.toSel")}${t(
+        "dataPipelines.dataFlowBranch"
+      )}`,
+      trigger: "change",
+    },
+  ],
+});
+
+// 数据源下拉框列表（数据来源，按 owner 加载，可含组织）
+const selListData = ref([]);
+// 数据流向下拉框列表（固定为当前用户的个人数据集，不含组织）
+const dataFlowList = ref([]);
+const csg_hub_dataset_info = ref({});
+// 格式转换
+const dataObj = ref([]);
+
+// 数据来源分支
+const branchList = ref([]);
+// 数据流向分支
+const to_branchList = ref([]);
+
+const activeGroup = ref(null);
+
+// 判断当前选中的格式是否是 PDF
+const isPdfSelected = (groupKey) => {
+  if (!form.value.from_data_type) return false;
+  const group = dataObj.value[groupKey];
+  if (!group || !group.from_format_types) return false;
+  const selectedFormat = group.from_format_types.find(
+    (format) => format.value === form.value.from_data_type
+  );
+  return selectedFormat && (selectedFormat.label === "PDF" || selectedFormat.label === "pdf");
+};
+
+const mineru_api_url_placeholder = ref("MinerU API URL");
+const mineru_backend_placeholder = ref("Mineru Backend");
+// 获取 MinerU API URL 默认值
+const fetchMineruApiUrl = async () => {
+  try {
+    const { data } = await useFetchApi("/dataflow/formatify/get_mineru_api_url").get().json();
+    if (data.value?.code === 200 && data.value?.data?.mineru_api_url) {
+      mineru_api_url_placeholder.value = data.value.data.mineru_api_url;
+      mineru_backend_placeholder.value = data.value.data.mineru_backend;
+    }
+  } catch (error) {
+    console.error("获取 MinerU API URL 失败:", error);
+  }
+};
+
+// 处理源格式变化
+const handleSourceChange = (groupKey) => {
+  console.log(form.value.from_data_type, "-------------------");
+  console.log(groupKey, "groupKeygroupKeygroupKey");
+  activeGroup.value = groupKey;
+  form.value.to_data_type = null; // 重置目标格式选择
+  
+  // 如果选中的是 PDF，获取默认的 mineru_api_url
+  if (isPdfSelected(groupKey)) {
+    fetchMineruApiUrl();
+  } else {
+    // 如果不是 PDF，清空 mineru_api_url
+    form.value.mineru_api_url = "";
+  }
+};
+
+onMounted(() => {
+  updateOwner();
+  loadDataFlowList();
+  getFormatTypeList();
+  fetchUserToken();
+});
+
+watch([() => userStore.username, () => route.query.datasetPath], () => {
+  updateOwner();
+  loadDataFlowList();
+});
+
+const fetchUserToken = async () => {
+  if (!userStore.username) return;
+
+  const { data } = await useFetchApi(
+    `/user/${userStore.username}/tokens?app=git`
+  ).json();
+  if (data.value) {
+    const body = data.value;
+    if (body.data) {
+      accessToken.value = body.data[0].token;
+    }
+  }
+};
+
+/**
+ * 查询数据来源分支
+ */
+const fetchBranchList = async (val) => {
+  if (val) {
+    let params = selListData.value.find((item) => item.path === val);
+    form.value.from_csg_hub_dataset_name = params.name;
+    form.value.from_csg_hub_dataset_id = params.id;
+  } else {
+    form.value.from_csg_hub_dataset_name = "";
+    form.value.from_csg_hub_dataset_id = "";
+  }
+  form.value.from_csg_hub_dataset_branch = "";
+
+  const url = `/datasets/${form.value.from_csg_hub_repo_id}/branches`;
+  let options = {
+    headers: {
+      Authorization: `Bearer ${cookies.get("user_token")}`,
+      cookie: `previous_path=${cookies.get(
+        "previous_path"
+      )};user_token=${cookies.get("user_token")};`,
+    },
+  };
+  const { data } = await useFetchApi(url, options).get().json();
+  if (data.value && data.value.data) {
+    branchList.value = data.value.data;
+  }
+};
+
+/**
+ * 查询数据流向分支
+ * @param val
+ */
+const selListDataChange = (val) => {
+  if (val) {
+    let params = dataFlowList.value.find((item) => item.path === val);
+    form.value.to_csg_hub_dataset_name = params ? params.name : "";
+    form.value.to_csg_hub_dataset_id = params ? params.id : "";
+    // 数据流向分支取所选数据集默认分支（后端上传时自动版本化 v1/v2）
+    form.value.to_csg_hub_dataset_default_branch = params
+      ? params.default_branch || "main"
+      : "";
+  } else {
+    form.value.to_csg_hub_dataset_name = "";
+    form.value.to_csg_hub_dataset_id = "";
+    form.value.to_csg_hub_dataset_default_branch = "";
+  }
+};
+
+/**
+ * 加载当前用户个人数据集，作为数据流向候选（不含组织，与来源 owner 解耦）
+ */
+const loadDataFlowList = async () => {
+  if (!userStore.username) return;
+  let options = {
+    headers: {
+      Authorization: `Bearer ${cookies.get("user_token")}`,
+      cookie: `previous_path=${cookies.get(
+        "previous_path"
+      )};user_token=${cookies.get("user_token")};`,
+    },
+  };
+  const url = `/user/${userStore.username}/datasets?per=50&page=1`;
+  const { data } = await useFetchApi(url, options).get().json();
+  dataFlowList.value = data.value && data.value.data ? data.value.data : [];
+};
+
+/**
+ * 根据数据所有者获取数据集列表（数据来源 / 数据流向共用），借鉴数据处理任务创建
+ * @param type 为真时表示所有者切换，需清空已选数据来源
+ */
+const getSelListData = async (type) => {
+  if (!form.value.owner) {
+    selListData.value = [];
+    return;
+  }
+  let options = {
+    headers: {
+      Authorization: `Bearer ${cookies.get("user_token")}`,
+      cookie: `previous_path=${cookies.get(
+        "previous_path"
+      )};user_token=${cookies.get("user_token")};`,
+    },
+  };
+  let url = `/user/${form.value.owner}/datasets?per=50&page=1`;
+  if (form.value.owner !== userStore.username) {
+    url = `/organization/${form.value.owner}/datasets?current_user=${userStore.username}&per=50&page=1`;
+  }
+  const { data } = await useFetchApi(url, options).get().json();
+  if (data.value && data.value.data) {
+    selListData.value = data.value.data;
+  } else {
+    selListData.value = [];
+  }
+  if (type) {
+    form.value.from_csg_hub_repo_id = "";
+    form.value.from_csg_hub_dataset_branch = "";
+    branchList.value = [];
+  }
+};
+
+/**
+ * 初始化数据所有者（默认当前用户 / 路由携带的数据集归属）
+ */
+const updateOwner = () => {
+  form.value.owner = route.query.datasetPath
+    ? route.query.datasetPath.split("/")[0]
+    : userStore.username;
+  if (form.value.owner) {
+    getSelListData();
+  }
+};
+
+/**
+ * 获取数据格式类型列表
+ */
+const getFormatTypeList = async () => {
+  let url = "/dataflow/formatify/formatify/get_format_type_list";
+  const { data } = await useFetchApi(url).get().json();
+  if (data.value?.code === 200) {
+    dataObj.value = data.value.data;
+  }
+};
+
+const submit = async () => {
+  const nsCheck = guardNamespaceBeforeSubmit(form, t, {
+    namespacesLoading: taskNamespaceFieldsRef.value?.namespacesLoading,
+  });
+  if (!nsCheck.ok) {
+    ElMessage.error(nsCheck.message);
+    return;
+  }
+  if (!form.value.cluster_id) {
+    ElMessage.error(
+      t("all.pleaseSelect", { value: t("dataPipelines.selectRegion") })
+    );
+    return;
+  }
+  if (
+    form.value.space_resource_id === "" ||
+    form.value.space_resource_id == null
+  ) {
+    ElMessage.error(
+      t("all.pleaseSelect", { value: t("dataPipelines.spaceCloudResources") })
+    );
+    return;
+  }
+  formData.value.validate(async (valid, fields) => {
+    console.log(valid, "validvalidvalidvalid");
+    if (valid) {
+      // formLoading.value = true;
+      const spaceNames =
+        spaceResourceFieldsRef.value?.resolveSelectionNames?.() ?? {};
+      const params = buildTaskCreatePayload({
+        ...form.value,
+        ...spaceNames,
+      });
+
+      const options = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params),
+      };
+      formLoading.value = true;
+      const loading = ElLoading.service({
+        lock: true,
+        text: `${t("dataPipelines.inProgress")}...`,
+        background: "rgba(0, 0, 0, 0.7)",
+      });
+      const { data, error } = await useFetchApi(
+        "/dataflow/formatify/formatify/create",
+        options
+      )
+        .post()
+        .json();
+      formLoading.value = false;
+      loading.close();
+      console.log(data, "datadatadatadatadatadatadatadatadata");
+      if (data.value.code === 200) {
+        ElMessage.success(t("dataPipelines.operationSuccessful"));
+        router.back();
+      } else {
+        ElMessage.error(data.value.msg);
+      }
+    }
+  });
+};
+</script>
+<style lang="less" scoped>
+/** 任务所属：个人 / 组织各占一行 */
+.task-scope-radio-group {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 12px;
+}
+.task-scope-radio-group :deep(.el-radio) {
+  margin-right: 0;
+  height: auto;
+  align-items: center;
+}
+
+:deep(.settingsTableBtn) {
+  .el-button {
+    padding: 0 !important;
+    margin-right: 20px !important;
+    font-size: 14px !important;
+    color: #667085 !important;
+    font-weight: 400 !important;
+    &:hover {
+      color: #3250bd !important;
+    }
+  }
+}
+
+:deep(.tableCont) {
+  .el-button--text {
+    background: transparent !important;
+  }
+}
+
+:deep(.el-form--inline) {
+  .el-form-item {
+    margin-right: 12px;
+  }
+}
+.borderBox {
+  border-radius: var(--spacing-lg, 12px);
+  border: var(--spacing-none, 1px) solid
+    var(--colors-gray-light-mode-200, #eaecf0);
+  background: var(--Base-White, #fff);
+  overflow: hidden;
+}
+:deep(.el-table__header) {
+  background: var(--Gray-50, #f9fafb);
+}
+:deep(.el-table) {
+  .el-table__cell {
+    padding: 16px 24px;
+  }
+}
+:deep(.tableCont) {
+  .el-button--text {
+    border: none;
+  }
+  .el-table__cell {
+    font-size: 14px;
+    color: #101828;
+    font-weight: 400;
+  }
+}
+:deep(.tableHeader) {
+  font-size: 12px !important;
+  font-weight: normal !important;
+  color: #475467;
+  padding: 12px 24px !important;
+  border-bottom: 1px solid var(--colors-gray-light-mode-200, #eaecf0);
+  background: var(--Gray-50, #f9fafb) !important;
+}
+
+:deep(.el-form) {
+  padding: 15px;
+}
+</style>
