@@ -38,7 +38,7 @@ tmp
 # DS_Store
 **/.DS_Store
 
-csghub-portal
+/csghub-portal
 
 .vscode/settings.json
 
