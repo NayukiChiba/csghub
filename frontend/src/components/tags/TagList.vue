@@ -8,14 +8,15 @@
 
   <div v-show="activeCategory === 'task' && repoType !== 'mcp' && repoType !== 'skill' && (taskTagFilterInput === '' || hasMatchingTaskTags)">
     <div class="">
-      <div v-for="(value, key) in filteredTaskTags">
+      <div v-for="(value, key) in filteredTaskTags" :key="key">
         <template v-if="taskTagFilterInput === '' || value.length > 0">
-          <h3 v-if="getTranslatedTag(key)" class="text-gray-500 text-xs my-4">
-            {{ $t(`tags.${key}`) }}
+          <h3 v-if="value.length > 0" class="text-gray-500 text-xs my-4">
+            {{ getTagGroupName(key) }}
           </h3>
-          <div v-if="getTranslatedTag(key)" class="flex gap-2 flex-wrap">
+          <div v-if="value.length > 0" class="flex gap-2 flex-wrap">
             <TaskTagItem
               v-for="tag in value"
+              :key="tag.id || `${tag.category}-${tag.name}`"
               :tag="tag"
               :active="isTagActive('task', tag.name)"
               @handleTagClick="handleTagClick" />
@@ -184,16 +185,18 @@
     return matchedTags
   }
 
-  const getTranslatedTag = (key) => {
-      const translation = t(`tags.${key}`);
-      let ret = translation !== 'tags.' + key && translation !== '';
-      return ret;
+  const getTagGroupName = (key) => {
+    if (key === '__other__') return t('all.others')
+    const translation = t(`tags.${key}`)
+    return translation === `tags.${key}` || translation === ''
+      ? key.replace(/_/g, ' ')
+      : translation
   }
 
   const hasMatchingTaskTags = computed(() => {
     if (props.repoType === 'mcp' || props.repoType === 'skill') {
-      return false;
+      return false
     }
-    return Object.values(props.taskTags).some(tags => tags.length > 0);
-  });
+    return Object.values(props.taskTags || {}).some((tags) => tags.length > 0)
+  })
 </script>

@@ -3,6 +3,7 @@
     <div class="flex flex-wrap gap-1">
       <TagCategory
         v-for="category in avaliableCategories"
+        :key="category.name"
         :name="category.name"
         :zhName="category.show_name"
         :activeCategory="activeNavItem"
@@ -13,7 +14,7 @@
       <TagList
         :activeCategory="activeNavItem"
         :taskTags="tagsForCategory['task']"
-        :tags="tagsForCategory[activeNavItem]"
+        :tags="activeNavItem === 'task' && repoType !== 'mcp' && repoType !== 'skill' ? [] : tagsForCategory[activeNavItem]"
         :activeTags="activeTags"
         :repoType="repoType"
         @setActiveTag="setActiveTag"
@@ -27,7 +28,6 @@
   import TagList from './TagList.vue'
   import useFetchApi from '../../packs/useFetchApi'
   import { ElMessage } from 'element-plus'
-  import { useI18n } from 'vue-i18n'
   import TagCategory from './TagCategory.vue'
   const props = defineProps({
     repoType: String,
@@ -41,20 +41,8 @@
 
   const emit = defineEmits(['resetTags', 'updateCategories'])
 
-  const { t } = useI18n()
-
-  const tagFields = {
-    model: [
-      'computer_vision',
-      'natural_language_processing',
-      'audio_processing',
-      'multimodal'
-    ],
-    dataset: ['text_processing', 'graphics', 'audio', 'video', 'multimodal', 'scientific_computing'],
-    code: []
-  }
-
   const tagCategories = ref([])
+  const allTags = ref([])
   const tagsForCategory = ref({})
 
   const activeNavItem = ref('task')
@@ -62,17 +50,40 @@
   const activeTags = ref({})
 
   const avaliableCategories = computed(() => {
-    return tagCategories.value.filter((c) => {
-      // 当repoType为mcp时，过滤掉runmode类别
-      if (props.repoType === 'mcp' && c.name === 'runmode') {
+    const categoriesWithTags = new Set(allTags.value.map((tag) => tag.category))
+    const configuredCategories = tagCategories.value.filter((category) => {
+      if (props.repoType === 'mcp' && category.name === 'runmode') {
         return false
       }
-      return c.scope === props.repoType && c.enabled && c.name !== 'publisher'
+      return category.scope === props.repoType &&
+        category.enabled &&
+        category.name !== 'publisher' &&
+        categoriesWithTags.has(category.name)
     })
+    const knownCategoryNames = new Set(
+      tagCategories.value
+        .filter((category) => category.scope === props.repoType)
+        .map((category) => category.name)
+    )
+    const dynamicCategories = [...categoriesWithTags]
+      .filter((name) =>
+        name &&
+        name !== 'publisher' &&
+        !(props.repoType === 'mcp' && name === 'runmode') &&
+        !knownCategoryNames.has(name)
+      )
+      .map((name) => ({
+        name,
+        show_name: name,
+        scope: props.repoType,
+        enabled: true
+      }))
+
+    return [...configuredCategories, ...dynamicCategories]
   })
 
   watch(avaliableCategories,
-    (newValue, _) => {
+    (newValue) => {
       if (newValue.length > 0 && newValue[0]?.name) {
         activeNavItem.value = newValue[0].name
       }
@@ -176,39 +187,26 @@
   )
 
   async function fetchTags() {
-    const params = new URLSearchParams({
-      scope: props.repoType,
-      built_in: true
-    })
-    avaliableCategories.value.forEach((category) => {
-      params.append('category', category.name)
-    })
-    const { _, data } = await useFetchApi(`/tags?${params.toString()}`).json()
+    const params = new URLSearchParams({ scope: props.repoType })
+    const { data, error } = await useFetchApi(`/tags?${params.toString()}`).json()
     if (data.value?.data) {
-      let tempTaskTags = {}
-      const allTaskTags = data.value.data.filter(
-        (tag) =>
-          tag.category === 'task' &&
-          tag.scope === props.repoType &&
-          tag.built_in === true
-      )
-      tagFields[props.repoType]?.forEach((field) => {
-        const fieldTags = allTaskTags.filter((tag) => tag.group === field)
-        tempTaskTags[field] = fieldTags
-      })
+      allTags.value = data.value.data.filter((tag) => tag.scope === props.repoType)
 
       avaliableCategories.value.forEach((category) => {
+        const categoryTags = allTags.value.filter((tag) => tag.category === category.name)
         if (category.name === 'task' && props.repoType !== 'mcp' && props.repoType !== 'skill') {
-          tagsForCategory.value['task'] = tempTaskTags
+          tagsForCategory.value.task = categoryTags.reduce((groups, tag) => {
+            const group = tag.group || '__other__'
+            if (!groups[group]) groups[group] = []
+            groups[group].push(tag)
+            return groups
+          }, {})
         } else {
-          tagsForCategory.value[category.name] = data.value.data.filter(
-            (tag) =>
-              tag.category === category.name &&
-              tag.scope === props.repoType &&
-              tag.built_in === true
-          )
+          tagsForCategory.value[category.name] = categoryTags
         }
       })
+    } else {
+      ElMessage.error(`Failed to fetch tags: ${error.value}`)
     }
   }
 
