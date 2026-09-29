@@ -39,30 +39,21 @@
 
   <div v-show="activeCategory === 'framework' && (taskTagFilterInput === '' || filteredTags.length > 0)">
     <div class="flex gap-2 flex-wrap">
-      <PyTorch
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'pytorch')" />
-      <TensorFlow
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'tensorflow')" />
-      <Safetensors
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'safetensors')" />
-      <ONNX
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'onnx')" />
-      <JAX
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'jax')" />
-      <PaddlePaddle
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'paddlepaddle')" />
-      <Joblib
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'joblib')" />
-      <GGUF
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'gguf')" />
+      <template
+        v-for="tag in filteredTags"
+        :key="tag.id || tag.name">
+        <component
+          v-if="getFrameworkComponent(tag.name)"
+          :is="getFrameworkComponent(tag.name)"
+          :active="isTagActive('framework', tag.name)"
+          @setActiveFrameworkTag="handleTagClick" />
+        <TagItem
+          v-else
+          :tag="tag"
+          activeCategory="framework"
+          :active="isTagActive('framework', tag.name)"
+          @handleTagClick="handleTagClick" />
+      </template>
     </div>
   </div>
 
@@ -130,6 +121,21 @@
   const taskTagFilterInput = ref('')
 
   const specificCategories = ['task', 'framework', 'language', 'license']
+
+  const frameworkComponents = {
+    pytorch: PyTorch,
+    tensorflow: TensorFlow,
+    safetensors: Safetensors,
+    onnx: ONNX,
+    jax: JAX,
+    paddlepaddle: PaddlePaddle,
+    joblib: Joblib,
+    gguf: GGUF
+  }
+
+  const getFrameworkComponent = (tagName) => {
+    return frameworkComponents[tagName?.toLowerCase()]
+  }
 
   const handleTagClick = (category, tagName) => {
     emit('setActiveTag', category, tagName)

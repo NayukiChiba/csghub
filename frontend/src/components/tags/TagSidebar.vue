@@ -187,7 +187,7 @@
   )
 
   async function fetchTags() {
-    const params = new URLSearchParams({ scope: props.repoType })
+    const params = new URLSearchParams({ scope: props.repoType, used: 'true' })
     const { data, error } = await useFetchApi(`/tags?${params.toString()}`).json()
     if (data.value?.data) {
       allTags.value = data.value.data.filter((tag) => tag.scope === props.repoType)
