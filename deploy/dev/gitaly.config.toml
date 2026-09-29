@@ -1,0 +1,24 @@
+bin_dir = "/usr/local/bin"
+listen_addr = "0.0.0.0:8075"
+
+[git]
+use_bundled_binaries = true
+
+[[git.config]]
+key = "http.sslVerify"
+value = "false"
+
+[auth]
+token = "abc123secret"
+
+[[storage]]
+name = "default"
+path = "/home/git/repositories"
+
+[gitlab]
+# Gitaly 在容器内通过该地址回调本机源码运行的 csghub-server。
+url = "http://host.docker.internal:8080"
+secret = "signing-key"
+
+[gitlab.http-settings]
+self_signed_cert = false
