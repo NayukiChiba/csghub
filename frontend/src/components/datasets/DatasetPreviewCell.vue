@@ -22,9 +22,6 @@
         class="max-h-48 max-w-64 rounded"
         controls
         preload="metadata" />
-      <figcaption v-if="item.path" class="mt-1 break-all text-xs text-gray-500">
-        {{ item.path }}
-      </figcaption>
     </figure>
   </div>
   <span v-else class="whitespace-pre-wrap break-words">{{ displayValue }}</span>
