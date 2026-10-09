@@ -2,6 +2,7 @@ import { rule } from './en_js/rule';
 import { models } from './en_js/models';
 import { comment } from './en_js/comment';
 import { datasets } from './en_js/datasets';
+import { aiChat } from './en_js/aiChat';
 import { organization } from './en_js/organization';
 import { navbar } from './en_js/navbar';
 import { all } from './en_js/all';
@@ -46,6 +47,7 @@ export default {
   models,
   comment,
   datasets,
+  aiChat,
   codes,
   skills,
   organization,

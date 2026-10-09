@@ -2,6 +2,7 @@ import { rule } from './zh_js/rule';
 import { models } from './zh_js/models';
 import { comment } from './zh_js/comment';
 import { datasets } from './zh_js/datasets';
+import { aiChat } from './zh_js/aiChat';
 import { organization } from './zh_js/organization';
 import { navbar } from './zh_js/navbar';
 import { all } from './zh_js/all';
@@ -46,6 +47,7 @@ export default {
   models,
   comment,
   datasets,
+  aiChat,
   codes,
   skills,
   organization,
