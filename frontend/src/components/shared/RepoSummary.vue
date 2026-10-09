@@ -5,7 +5,8 @@
       <ParquetViewer
         v-if="datasetInfo"
         :datasetInfo="datasetInfo"
-        :namespacePath="namespacePath" />
+        :namespacePath="namespacePath"
+        :currentBranch="currentBranch" />
       <markdown-viewer
         :content="readmeContent"
         :setDefaultText="true"

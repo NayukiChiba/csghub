@@ -28,6 +28,23 @@ var ContentTypeFormatMapping = map[string]string{
 	"ico":  "image/x-icon",
 	"heic": "image/heic",
 	"heif": "image/heif",
+	"aac":  "audio/aac",
+	"flac": "audio/flac",
+	"m4a":  "audio/mp4",
+	"mp3":  "audio/mpeg",
+	"oga":  "audio/ogg",
+	"ogg":  "audio/ogg",
+	"opus": "audio/ogg",
+	"wav":  "audio/wav",
+	"avi":  "video/x-msvideo",
+	"m4v":  "video/mp4",
+	"mkv":  "video/x-matroska",
+	"mov":  "video/quicktime",
+	"mp4":  "video/mp4",
+	"mpeg": "video/mpeg",
+	"mpg":  "video/mpeg",
+	"ogv":  "video/ogg",
+	"webm": "video/webm",
 }
 
 const (
@@ -68,7 +85,7 @@ func (i *ResolveHandlerImpl) resolveFileOrContent(ctx *gin.Context, downloadFunc
 	}
 
 	format := getFileExtension(filePath)
-	if isImageFormat(format) {
+	if isBinaryFormat(format) {
 		i.sendImageData(ctx, downloadFunc)
 	} else {
 		i.renderTextData(ctx, getContentFunc)
@@ -184,9 +201,17 @@ func (i *ResolveHandlerImpl) buildDownloadReq(ctx *gin.Context) types.DownloadRe
 	}
 }
 
-func isImageFormat(format string) bool {
+func isBinaryFormat(format string) bool {
 	contentType, ok := ContentTypeFormatMapping[format]
-	return ok && strings.HasPrefix(contentType, "image/")
+	if !ok {
+		return false
+	}
+	for _, prefix := range []string{"image/", "audio/", "video/"} {
+		if strings.HasPrefix(contentType, prefix) {
+			return true
+		}
+	}
+	return false
 }
 
 func determineContentType(filename string) string {
