@@ -7,6 +7,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/cmd/csghub-portal/main.go",
+      "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
       "args": ["start", "server"]
     },
@@ -16,6 +17,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/cmd/csghub-portal/main.go",
+      "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
       "args": ["migration", "init"]
     },
@@ -25,6 +27,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/cmd/csghub-portal/main.go",
+      "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
       "args": ["migration", "migrate"]
     },
@@ -34,6 +37,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/cmd/csghub-portal/main.go",
+      "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
       "args": ["migration", "rollback"]
     },
