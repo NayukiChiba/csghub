@@ -77,8 +77,8 @@ describe("ParquetViewer", () => {
   it("processes table data correctly", async () => {
     await flushPromises();
     expect(wrapper.vm.tableData).toEqual([
-      { id: "1", text: "First example text", label: "positive" },
-      { id: "2", text: "Second example text", label: "negative" }
+      { id: 1, text: "First example text", label: "positive" },
+      { id: 2, text: "Second example text", label: "negative" }
     ]);
   });
 

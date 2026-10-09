@@ -1,5 +1,9 @@
 <template>
-  <div class="flex flex-col border rounded-md p-[16px] gap-[16px]">
+  <div
+    class="flex flex-col gap-[16px]"
+    :class="fullscreen
+      ? 'fixed inset-0 z-[2000] bg-white overflow-y-auto p-[32px]'
+      : 'border rounded-md p-[16px]'">
     <div class="flex justify-between gap-[16px]">
       <div class="flex w-[181px] h-[28px]">
         <SvgIcon
@@ -9,35 +13,14 @@
         />
         <p class="ml-[8px] text-gray-900 text-lg leading-[28px]">{{ $t('all.parquet') }}</p>
       </div>
-      <!-- <div class="flex items-center justify-center">
-        <SvgIcon
-          name="parquet_auto_converted"
-          width="10px"
-          height="10px"
-          class="cursor-pointer"
-        />
-        <p class="ml-[8px] text-gray-500 text-sm leading-[20px]">Auto-converted to Parquet</p>
+      <div
+        class="items-center gap-1.5 flex cursor-pointer"
+        @click="toggleFullscreen">
+        <SvgIcon :name="fullscreen ? 'x-close' : 'fullscreen'" />
+        <div class="text-gray-700 text-xs leading-[18px]">
+          {{ fullscreen ? $t('endpoints.playground.exitFullscreen') : $t('endpoints.playground.maximum') }}
+        </div>
       </div>
-      <div class="flex items-center justify-center cursor-pointer px-[12px] py-[2px] border rounded-xs">
-        <SvgIcon
-          name="parquet_api"
-          width="10px"
-          height="6px"
-        />
-        <p class="ml-[8px] text-xs leading-[18px] text-gray-500">
-          API
-        </p>
-      </div>
-      <div class="flex items-center justify-center cursor-pointer px-[12px] py-[2px] border rounded-xs">
-        <SvgIcon
-          name="parquet_api"
-          width="10px"
-          height="6px"
-        />
-        <p class="ml-[8px] text-xs leading-[18px] text-gray-500">
-          Go to dataset viewer
-        </p>
-      </div> -->
     </div>
     <div class="flex justify-between gap-[16px] text-gray-700 text-sm leading-[20px] xl:flex-col">
       <div class="flex flex-col gap-[8px]">
@@ -92,17 +75,44 @@
       <el-table :data="tableData"
                 border
                 stripe
-                max-height="420"
+                :max-height="fullscreen ? 'calc(100vh - 320px)' : '480'"
                 @row-click="toggleRow"
                 v-loading="previewLoading"
                 class="w-full rounded-md mb-4"
                 row-class-name="row-item-clamp cursor-pointer"
                 cell-class-name="!align-top">
-        <el-table-column v-for="column in previewData.columns"
-                        :key="column"
-                        :prop="column"
-                        :label="column"
-                        min-width="180" />
+        <el-table-column
+          type="index"
+          :index="rowIndex"
+          label=""
+          width="72"
+          fixed="left"
+          align="right"
+          class-name="text-gray-400" />
+        <el-table-column
+          v-for="(column, columnIndex) in previewData.columns"
+          :key="column"
+          :prop="column"
+          :label="column"
+          min-width="240">
+          <template #header>
+            <div class="flex flex-col leading-[18px]">
+              <span class="text-gray-900 font-medium">{{ column }}</span>
+              <span
+                v-if="previewData.columns_type && previewData.columns_type[columnIndex]"
+                class="text-gray-400 text-xs font-normal">
+                {{ previewData.columns_type[columnIndex] }}
+              </span>
+            </div>
+          </template>
+          <template #default="scope">
+            <DatasetPreviewCell
+              :value="scope.row[column]"
+              :column="column"
+              :namespacePath="namespacePath"
+              :currentBranch="currentBranch" />
+          </template>
+        </el-table-column>
       </el-table>
       <CsgPagination
         :perPage="perPage"
@@ -115,29 +125,36 @@
 </template>
 
 <script setup>
-  import { computed, onMounted, ref, watch } from 'vue'
+  import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
   import { ElMessage } from 'element-plus'
-  import { Search } from '@element-plus/icons-vue'
   import useFetchApi from '../../packs/useFetchApi'
   import CsgPagination from '../shared/CsgPagination.vue'
+  import DatasetPreviewCell from './DatasetPreviewCell.vue'
   import { useI18n } from 'vue-i18n'
-  
+
   const props = defineProps({
     datasetInfo: {
       type: Array,
-      default: []
+      default: () => []
 
     },
-    namespacePath: String
+    namespacePath: String,
+    currentBranch: {
+      type: String,
+      default: 'main'
+    }
   })
 
   const { t } = useI18n()
   const previewLoading = ref(false)
 
-  const previewData = ref({ columns: [], rows: [], total: 0 })
+  const previewData = ref({ columns: [], columns_type: [], rows: [], total: 0 })
   const currentPage = ref(1)
   const totalRows = computed(() => { return previewData.value.total });
-  const perPage = ref(4)
+  const fullscreen = ref(false)
+  const NORMAL_PER_PAGE = 4
+  const FULLSCREEN_PER_PAGE = 20
+  const perPage = ref(NORMAL_PER_PAGE)
   const nameFilterInput = ref('')
   // 默认subset和split的值
   const splits = ref((props.datasetInfo && props.datasetInfo[0]?.splits) || [])
@@ -164,12 +181,11 @@
       return []
     }
 
-    const { rows, columns, columns_type = [] } = previewData.value
+    const { rows, columns } = previewData.value
 
     return rows.map(row =>
       columns.reduce((obj, column, index) => {
-        const value = row[index]
-        obj[column] = columns_type[index] === 'string' ? value : JSON.stringify(value, null, 2)
+        obj[column] = row[index]
         return obj
       }, {})
     )
@@ -188,9 +204,26 @@
     return result
   })
 
+  const rowIndex = (index) => {
+    return (currentPage.value - 1) * perPage.value + index + 1
+  }
+
   const toggleRow = (_row, _column, event) => {
     const row = event.target.closest('.el-table__row')
     row.classList.toggle('row-item-clamp')
+  }
+
+  const toggleFullscreen = () => {
+    fullscreen.value = !fullscreen.value
+    perPage.value = fullscreen.value ? FULLSCREEN_PER_PAGE : NORMAL_PER_PAGE
+    currentPage.value = 1
+    reloadRows()
+  }
+
+  const onKeydown = (event) => {
+    if (event.key === 'Escape' && fullscreen.value) {
+      toggleFullscreen()
+    }
   }
 
   const changeSubsetName = (value) => {
@@ -245,6 +278,11 @@
 
   onMounted(() => {
     reloadRows()
+    window.addEventListener('keydown', onKeydown)
+  })
+
+  onUnmounted(() => {
+    window.removeEventListener('keydown', onKeydown)
   })
 </script>
 
@@ -258,5 +296,19 @@
 
   :deep(.el-table__header-wrapper th) {
     background-color: #F9FAFB;
+  }
+
+  /* HuggingFace-like breathing room: taller rows, wider gutters */
+  :deep(.el-table th.el-table__cell) {
+    padding: 10px 0;
+  }
+
+  :deep(.el-table td.el-table__cell) {
+    padding: 14px 0;
+  }
+
+  :deep(.el-table .cell) {
+    padding: 0 20px;
+    line-height: 22px;
   }
 </style>
