@@ -35,6 +35,12 @@ go.work.sum
 # tmp
 tmp
 
+# local development files
+/bin/
+/data/
+/deploy/dev/
+/docker-compose.dev.yml
+
 # DS_Store
 **/.DS_Store
 

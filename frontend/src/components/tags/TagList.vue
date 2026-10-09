@@ -8,14 +8,15 @@
 
   <div v-show="activeCategory === 'task' && repoType !== 'mcp' && repoType !== 'skill' && (taskTagFilterInput === '' || hasMatchingTaskTags)">
     <div class="">
-      <div v-for="(value, key) in filteredTaskTags">
+      <div v-for="(value, key) in filteredTaskTags" :key="key">
         <template v-if="taskTagFilterInput === '' || value.length > 0">
-          <h3 v-if="getTranslatedTag(key)" class="text-gray-500 text-xs my-4">
-            {{ $t(`tags.${key}`) }}
+          <h3 v-if="value.length > 0" class="text-gray-500 text-xs my-4">
+            {{ getTagGroupName(key) }}
           </h3>
-          <div v-if="getTranslatedTag(key)" class="flex gap-2 flex-wrap">
+          <div v-if="value.length > 0" class="flex gap-2 flex-wrap">
             <TaskTagItem
               v-for="tag in value"
+              :key="tag.id || `${tag.category}-${tag.name}`"
               :tag="tag"
               :active="isTagActive('task', tag.name)"
               @handleTagClick="handleTagClick" />
@@ -38,30 +39,21 @@
 
   <div v-show="activeCategory === 'framework' && (taskTagFilterInput === '' || filteredTags.length > 0)">
     <div class="flex gap-2 flex-wrap">
-      <PyTorch
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'pytorch')" />
-      <TensorFlow
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'tensorflow')" />
-      <Safetensors
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'safetensors')" />
-      <ONNX
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'onnx')" />
-      <JAX
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'jax')" />
-      <PaddlePaddle
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'paddlepaddle')" />
-      <Joblib
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'joblib')" />
-      <GGUF
-        @setActiveFrameworkTag="handleTagClick"
-        :active="isTagActive('framework', 'gguf')" />
+      <template
+        v-for="tag in filteredTags"
+        :key="tag.id || tag.name">
+        <component
+          v-if="getFrameworkComponent(tag.name)"
+          :is="getFrameworkComponent(tag.name)"
+          :active="isTagActive('framework', tag.name)"
+          @setActiveFrameworkTag="handleTagClick" />
+        <TagItem
+          v-else
+          :tag="tag"
+          activeCategory="framework"
+          :active="isTagActive('framework', tag.name)"
+          @handleTagClick="handleTagClick" />
+      </template>
     </div>
   </div>
 
@@ -130,6 +122,21 @@
 
   const specificCategories = ['task', 'framework', 'language', 'license']
 
+  const frameworkComponents = {
+    pytorch: PyTorch,
+    tensorflow: TensorFlow,
+    safetensors: Safetensors,
+    onnx: ONNX,
+    jax: JAX,
+    paddlepaddle: PaddlePaddle,
+    joblib: Joblib,
+    gguf: GGUF
+  }
+
+  const getFrameworkComponent = (tagName) => {
+    return frameworkComponents[tagName?.toLowerCase()]
+  }
+
   const handleTagClick = (category, tagName) => {
     emit('setActiveTag', category, tagName)
   }
@@ -184,16 +191,18 @@
     return matchedTags
   }
 
-  const getTranslatedTag = (key) => {
-      const translation = t(`tags.${key}`);
-      let ret = translation !== 'tags.' + key && translation !== '';
-      return ret;
+  const getTagGroupName = (key) => {
+    if (key === '__other__') return t('all.others')
+    const translation = t(`tags.${key}`)
+    return translation === `tags.${key}` || translation === ''
+      ? key.replace(/_/g, ' ')
+      : translation
   }
 
   const hasMatchingTaskTags = computed(() => {
     if (props.repoType === 'mcp' || props.repoType === 'skill') {
-      return false;
+      return false
     }
-    return Object.values(props.taskTags).some(tags => tags.length > 0);
-  });
+    return Object.values(props.taskTags || {}).some((tags) => tags.length > 0)
+  })
 </script>
