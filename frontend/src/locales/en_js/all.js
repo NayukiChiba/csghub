@@ -57,6 +57,7 @@ export const all = {
   updateSuccess: "Update successfully",
   lastTime: "Last Updated",
   downloadCount: "Download",
+  repoSize: "File Size",
   recentlyUpdate: "Recently Updated",
   trending: "Trending",
   mostDownload: "Most Downloads",

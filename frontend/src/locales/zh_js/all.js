@@ -57,6 +57,7 @@ export const all = {
   updateSuccess: "更新成功",
   lastTime: "更新时间",
   downloadCount: "下载热度",
+  repoSize: "文件大小",
   recentlyUpdate: "最近更新",
   trending: "热门",
   mostDownload: "最多下载",
