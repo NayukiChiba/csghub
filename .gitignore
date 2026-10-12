@@ -56,3 +56,4 @@ coverage.html
 junit-report.xml
 
 .idea/
+log/
