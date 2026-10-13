@@ -16,10 +16,10 @@
           </button>
           <button
             class="flex items-center justify-center opacity-80 hover:opacity-100"
-            :title="$t('aiChat.close')"
-            @click="open = false">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+            :title="$t('aiChat.newChat')"
+            @click="newChat">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7.5 2.5V12.5M2.5 7.5H12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
           </button>
         </div>
@@ -100,6 +100,10 @@
         msgListRef.value.scrollTop = msgListRef.value.scrollHeight
       }
     })
+  }
+
+  const newChat = () => {
+    messages.value = []
   }
 
   const send = () => {

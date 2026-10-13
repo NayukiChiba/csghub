@@ -3,7 +3,7 @@ export const aiChat = {
   placeholder: '用自然语言描述你要找的数据集…',
   send: '发送',
   minimize: '最小化',
-  close: '关闭',
+  newChat: '新会话',
   welcome: '你好！告诉我你需要什么样的数据集，比如"找一些中文语音识别数据集，小于100MB"。',
   searching: '正在搜索…',
   noResult: '没有找到符合条件的数据集',
