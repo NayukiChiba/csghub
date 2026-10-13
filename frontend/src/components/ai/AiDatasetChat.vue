@@ -26,6 +26,8 @@
               v-for="ds in msg.datasets"
               :key="ds.namespace + '/' + ds.name"
               :href="`/datasets/${ds.namespace}/${ds.name}`"
+              target="_blank"
+              rel="noopener"
               class="block rounded-[8px] border border-gray-200 px-[12px] py-[8px] hover:border-brand-500">
               <div class="text-sm font-medium text-brand-600">{{ ds.namespace }}/{{ ds.name }}</div>
               <div class="mt-[2px] line-clamp-2 text-xs leading-[18px] text-gray-500">{{ ds.description }}</div>
