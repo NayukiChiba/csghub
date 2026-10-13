@@ -5,7 +5,24 @@
       class="flex h-[560px] w-[380px] flex-col overflow-hidden rounded-[12px] border border-gray-200 bg-white shadow-xl">
       <div class="flex items-center justify-between bg-brand-600 px-[16px] py-[12px] text-white">
         <span class="text-sm font-medium">{{ $t('aiChat.title') }}</span>
-        <SvgIcon name="x-close" class="cursor-pointer" @click="open = false" />
+        <div class="flex items-center gap-[12px]">
+          <button
+            class="flex items-center justify-center opacity-80 hover:opacity-100"
+            :title="$t('aiChat.minimize')"
+            @click="open = false">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </button>
+          <button
+            class="flex items-center justify-center opacity-80 hover:opacity-100"
+            :title="$t('aiChat.close')"
+            @click="open = false">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div ref="msgListRef" class="flex flex-1 flex-col gap-[12px] overflow-y-auto p-[16px]">
