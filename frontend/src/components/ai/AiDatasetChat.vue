@@ -47,6 +47,9 @@
               rel="noopener"
               class="block rounded-[8px] border border-gray-200 px-[12px] py-[8px] hover:border-brand-500">
               <div class="text-sm font-medium text-brand-600">{{ ds.namespace }}/{{ ds.name }}</div>
+              <div v-if="ds.size || ds.created_at" class="mt-[2px] text-xs leading-[18px] text-gray-400">
+                {{ ds.size ? formatBytes(ds.size) : '' }}{{ ds.size && ds.created_at ? ' · ' : '' }}{{ ds.created_at || '' }}
+              </div>
               <div class="mt-[2px] line-clamp-2 text-xs leading-[18px] text-gray-500">{{ ds.description }}</div>
             </a>
           </div>
@@ -104,6 +107,16 @@
 
   const newChat = () => {
     messages.value = []
+  }
+
+  const byteUnits = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB']
+  const formatBytes = (bytes) => {
+    let level = 0
+    let n = parseInt(bytes, 10) || 0
+    while (n >= 1024 && ++level) {
+      n = n / 1024
+    }
+    return n.toFixed(n < 10 && level > 0 ? 1 : 0) + ' ' + byteUnits[level]
   }
 
   const send = () => {
