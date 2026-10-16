@@ -36,8 +36,9 @@
             {{ msg.content }}
           </div>
           <div v-else class="flex max-w-[92%] flex-col gap-[8px] self-start">
-            <div class="whitespace-pre-wrap rounded-[8px] bg-gray-100 px-[12px] py-[8px] text-sm leading-[20px] text-gray-700">
-              {{ msg.content || (msg.loading ? $t('aiChat.searching') : '') }}
+            <div
+              class="markdown-body overflow-x-auto rounded-[8px] bg-gray-100 px-[12px] py-[8px] text-sm leading-[20px] text-gray-700"
+              v-html="msg.content ? renderMarkdown(msg.content) : msg.loading ? $t('aiChat.searching') : ''">
             </div>
             <a
               v-for="ds in msg.datasets"
@@ -86,7 +87,11 @@
   import { inject, nextTick, ref } from 'vue'
   import { fetchEventSource } from '@microsoft/fetch-event-source'
   import { useI18n } from 'vue-i18n'
+  import MarkdownIt from 'markdown-it'
   import { Typewriter } from '../../packs/typewriter'
+
+  const mdParser = new MarkdownIt()
+  const renderMarkdown = (content) => mdParser.render(content)
 
   const { t } = useI18n()
   const csghubServer = inject('csghubServer')
