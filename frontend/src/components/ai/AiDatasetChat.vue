@@ -55,7 +55,18 @@
           <div v-else class="flex max-w-[92%] flex-col gap-[8px] self-start">
             <div
               class="markdown-body overflow-x-auto rounded-[8px] bg-gray-100 px-[12px] py-[8px] text-sm leading-[20px] text-gray-700"
-              v-html="msg.content ? renderMarkdown(msg.content) : msg.loading ? $t('aiChat.searching') : ''">
+              v-html="msg.content ? renderMarkdown(msg.content) : msg.question ? renderMarkdown(msg.question.question) : msg.loading ? $t('aiChat.searching') : ''">
+            </div>
+            <div v-if="msg.question" class="flex flex-wrap gap-[8px]">
+              <button
+                v-for="opt in msg.question.options"
+                :key="opt.label"
+                class="rounded-[16px] border border-brand-500 px-[12px] py-[4px] text-xs leading-[20px] text-brand-600 disabled:cursor-default"
+                :class="msg.question.answered ? (msg.question.answered === opt.label ? 'bg-brand-600 text-white' : 'opacity-40') : 'hover:bg-brand-600 hover:text-white'"
+                :disabled="!!msg.question.answered"
+                @click="pickOption(msg, opt)">
+                {{ opt.label }}
+              </button>
             </div>
             <a
               v-for="ds in msg.datasets"
@@ -161,6 +172,14 @@
     messages.value = []
   }
 
+  // pickOption answers a clarification question: mark the picked option and
+  // send its self-contained rephrasing as the next user message.
+  const pickOption = (msg, opt) => {
+    if (msg.question?.answered || sending.value) return
+    msg.question.answered = opt.label
+    send(opt.send)
+  }
+
   const byteUnits = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB']
   const formatBytes = (bytes) => {
     let level = 0
@@ -171,12 +190,12 @@
     return n.toFixed(n < 10 && level > 0 ? 1 : 0) + ' ' + byteUnits[level]
   }
 
-  const send = () => {
-    const question = input.value.trim()
+  const send = (text) => {
+    const question = (typeof text === 'string' ? text : input.value).trim()
     if (!question || sending.value) return
     input.value = ''
     messages.value.push({ role: 'user', content: question })
-    const answer = { role: 'assistant', content: '', datasets: [], loading: true }
+    const answer = { role: 'assistant', content: '', datasets: [], question: null, loading: true }
     messages.value.push(answer)
     scrollBottom()
     sending.value = true
@@ -215,6 +234,11 @@
             typewriter.add(event.text)
           } else if (event.type === 'datasets' && Array.isArray(event.datasets)) {
             answer.datasets = event.datasets
+          } else if (event.type === 'question' && event.question) {
+            // clarification question: render the question with clickable
+            // options; picking one sends its self-contained `send` text
+            answer.question = event.question
+            answer.loading = false
           }
         } catch (e) {
           console.warn('bad chat event', e)
