@@ -2,7 +2,24 @@
   <div class="fixed bottom-[24px] right-[24px] z-[1500] flex flex-col items-end gap-[12px]">
     <div
       v-if="open"
-      class="flex h-[560px] w-[380px] flex-col overflow-hidden rounded-[12px] border border-gray-200 bg-white shadow-xl">
+      class="relative flex flex-col overflow-hidden rounded-[12px] border border-gray-200 bg-white shadow-xl"
+      :style="{ width: size.w + 'px', height: size.h + 'px' }">
+      <div
+        class="absolute left-0 top-0 z-10 flex h-[16px] w-[16px] cursor-nwse-resize items-start justify-start rounded-tl-[12px] text-white/70 hover:text-white"
+        title="拖拽调整大小"
+        @pointerdown="startResize($event, 'corner')">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 2L2 10M10 6L6 10M10 10L10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div
+        class="absolute left-0 top-[16px] bottom-0 z-10 w-[5px] cursor-ew-resize"
+        @pointerdown="startResize($event, 'left')">
+      </div>
+      <div
+        class="absolute left-[16px] right-0 top-0 z-10 h-[5px] cursor-ns-resize"
+        @pointerdown="startResize($event, 'top')">
+      </div>
       <div class="flex items-center justify-between bg-brand-600 px-[16px] py-[12px] text-white">
         <span class="text-sm font-medium">{{ $t('aiChat.title') }}</span>
         <div class="flex items-center gap-[12px]">
@@ -101,6 +118,36 @@
   const sending = ref(false)
   const messages = ref([])
   const msgListRef = ref(null)
+
+  // The panel is anchored to the bottom-right corner, so resizing drags the
+  // top/left edges outward (grow leftward/upward). Clamped to a usable range.
+  const MIN_W = 320
+  const MIN_H = 420
+  const size = ref({ w: 380, h: 560 })
+
+  const startResize = (e, dir) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startY = e.clientY
+    const startW = size.value.w
+    const startH = size.value.h
+    const onMove = (ev) => {
+      const maxW = window.innerWidth - 48
+      const maxH = window.innerHeight - 48
+      if (dir !== 'top') {
+        size.value.w = Math.min(maxW, Math.max(MIN_W, startW + (startX - ev.clientX)))
+      }
+      if (dir !== 'left') {
+        size.value.h = Math.min(maxH, Math.max(MIN_H, startH + (startY - ev.clientY)))
+      }
+    }
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
 
   const scrollBottom = () => {
     nextTick(() => {
