@@ -556,6 +556,39 @@
   const lastRequestUrl = ref('')
   const loadingRequest = ref(false)
 
+  // batch-fetch repository sizes and merge them into the loaded cards;
+  // size is best-effort, failures leave cards without a size label
+  async function loadRepoSizes() {
+    if (!['model', 'dataset', 'code', 'skill'].includes(props.repoType)) {
+      return
+    }
+    const repoIDs = reposData.value.map((repo) => repo.repository_id).filter(Boolean)
+    if (repoIDs.length === 0) {
+      return
+    }
+    try {
+      const { data } = await useFetchApi('/repos/extra', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repo_ids: repoIDs })
+      }).json()
+      const extras = data.value?.data
+      if (!extras) {
+        return
+      }
+      const sizeMap = {}
+      extras.forEach((item) => {
+        sizeMap[item.repo_id] = item.size
+      })
+      reposData.value = reposData.value.map((repo) => ({
+        ...repo,
+        size: sizeMap[repo.repository_id]
+      }))
+    } catch (error) {
+      console.warn('failed to load repo sizes', error)
+    }
+  }
+
   async function loadRepos(url) {
     if (loadingRequest.value && lastRequestUrl.value === url) {
       return
@@ -575,6 +608,7 @@
           } else {
             totalRepos.value = 0
           }
+          loadRepoSizes()
         }
       } else {
         ElMessage.warning(error.value.msg || t('all.fetchError'))

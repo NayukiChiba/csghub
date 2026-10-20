@@ -5,7 +5,8 @@
       <ParquetViewer
         v-if="datasetInfo"
         :datasetInfo="datasetInfo"
-        :namespacePath="namespacePath" />
+        :namespacePath="namespacePath"
+        :currentBranch="currentBranch" />
       <markdown-viewer
         :content="readmeContent"
         :setDefaultText="true"
@@ -17,6 +18,11 @@
       <div class="pl-6 py-8">
         <div class="text-gray-700 text-base font-medium text-md leading-[22px] md:pl-0">{{ $t('all.downloadCount') }}</div>
         <div class="text-gray-700 text-base font-semibold leading-6 mt-1 md:pl-0">{{ downloadCount }}</div>
+      </div>
+
+      <div v-if="repoSize !== null" class="pl-6 pb-8">
+        <div class="text-gray-700 text-base font-medium text-md leading-[22px] md:pl-0">{{ $t('all.repoSize') }}</div>
+        <div class="text-gray-700 text-base font-semibold leading-6 mt-1 md:pl-0">{{ formatBytes(repoSize) }}</div>
       </div>
 
       <ModelMetadata
@@ -147,6 +153,32 @@
   const relations = ref({})
   const endpoint = ref({})
   const datasetInfo = ref(null)
+  const repoSize = ref(null)
+
+  const byteUnits = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB']
+  const formatBytes = (bytes) => {
+    let level = 0
+    let n = parseInt(bytes, 10) || 0
+    while (n >= 1024 && ++level) {
+      n = n / 1024
+    }
+    return n.toFixed(n < 10 && level > 0 ? 1 : 0) + ' ' + byteUnits[level]
+  }
+
+  const fetchRepoSize = async () => {
+    if (!props.currentBranch) return
+    try {
+      const { data } = await useFetchApi(
+        `/${props.repoType}s/${props.namespacePath}/size/${props.currentBranch}`
+      ).json()
+      if (data.value?.data) {
+        repoSize.value = data.value.data.total_size
+      }
+    } catch (error) {
+      // size is best-effort; the block stays hidden when unavailable
+      console.warn('failed to load repo size', error)
+    }
+  }
 
   const showSideSection = computed(() => {
     return props.repoType !== 'mcp'
@@ -238,10 +270,12 @@
   }
 
   watch(() => props.currentBranch, resolveReadmeContent)
+  watch(() => props.currentBranch, fetchRepoSize)
 
   onMounted(() => {
     fetchData()
     fetchCatalog()
+    fetchRepoSize()
     if (props.repoType !== 'mcp') {
       fetchRepoRelations()
     }

@@ -35,13 +35,16 @@ go.work.sum
 # tmp
 tmp
 
-# local development data
+# local development files
+/bin/
 /data/
+/deploy/dev/
+/docker-compose.dev.yml
 
 # DS_Store
 **/.DS_Store
 
-csghub-portal
+/csghub-portal
 
 .vscode/settings.json
 
@@ -53,3 +56,4 @@ coverage.html
 junit-report.xml
 
 .idea/
+log/

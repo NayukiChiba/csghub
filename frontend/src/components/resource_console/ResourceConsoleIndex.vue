@@ -25,6 +25,11 @@
         name="evaluations"
         :label="`&nbsp;${$t('evaluation.list.title')}&nbsp;`"
       ></el-tab-pane>
+      <el-tab-pane
+        v-if="userStore.isAdmin"
+        name="ai_search"
+        :label="`&nbsp;${$t('resourceConsole.aiSearch.title')}&nbsp;`"
+      ></el-tab-pane>
     </el-tabs>
 
 
@@ -112,6 +117,11 @@
     <div v-if="activeTab === '' || activeTab === 'evaluations'" class="mt-4 w-full">
       <EvaluationTable :evaluations="filteredEvaluations" />
     </div>
+
+    <!-- AI search LLM config (admin only) -->
+    <div v-if="activeTab === 'ai_search' && userStore.isAdmin" class="mt-4 w-full">
+      <AiSearchLLMConfig />
+    </div>
   </div>
 </template>
 
@@ -123,6 +133,7 @@
   import ViewMore from "../shared/ViewMore.vue"
   import EndpointItem from "../endpoints/EndpointItem.vue"
   import EvaluationTable from "./EvaluationTable.vue"
+  import AiSearchLLMConfig from "./AiSearchLLMConfig.vue"
   import useFetchApi from "../../packs/useFetchApi"
   import { ElMessage } from "element-plus"
   import CsgButton from "../shared/CsgButton.vue"

@@ -22,6 +22,7 @@ import zh from './locales/zh.js'
 import zhHant from './locales/zhHant.js'
 
 import Navbar from "./components/navbar/Navbar.vue"
+import AiDatasetChat from "./components/ai/AiDatasetChat.vue"
 import CommentList from "./components/comment/CommentList.vue"
 import EndpointDetail from "./components/endpoints/EndpointDetail.vue"
 import NotebookDetail from "./components/notebooks/NotebookDetail.vue"
@@ -118,6 +119,7 @@ const app = createApp({
     // admin pages end
     HelloWorld,
     Navbar,
+    AiDatasetChat,
     CommentList,
     RepoDetail,
     Profile,

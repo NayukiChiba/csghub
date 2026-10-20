@@ -59,6 +59,7 @@ export const all = {
   updateSuccess: "更新成功",
   lastTime: "更新時間",
   downloadCount: "下載熱度",
+  repoSize: "檔案大小",
   public: "公開",
   private: "私有",
   recentlyUpdate: "最近更新",

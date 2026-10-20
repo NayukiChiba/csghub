@@ -67,6 +67,14 @@
         <SvgIcon name="download2" />
         {{ repo.downloads }}
       </span>
+
+      <template v-if="repo.size > 0">
+        <span> <SvgIcon name="vertical_divider" /> </span>
+        <span class="whitespace-nowrap flex gap-1 items-center">
+          <SvgIcon name="file" />
+          {{ formatBytes(repo.size) }}
+        </span>
+      </template>
     </div>
   </a>
 </template>
@@ -91,6 +99,17 @@
   const { t, locale } = useI18n()
   const taskTagIconExists = ref(false)
   const { setRepoTab } = useRepoTabStore()
+
+  const byteUnits = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB']
+  const formatBytes = (bytes) => {
+    let level = 0
+    let n = parseInt(bytes, 10) || 0
+    while (n >= 1024 && ++level) {
+      n = n / 1024
+    }
+    return n.toFixed(n < 10 && level > 0 ? 1 : 0) + ' ' + byteUnits[level]
+  }
+
   const showNewTag = computed(() => {
     return ((props.repoType === 'model' || props.repoType === 'dataset')) && (isWithinTwoWeeks(props.repo.created_at) || isWithinTwoWeeks(props.repo.updated_at));
   });
