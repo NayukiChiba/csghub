@@ -1,0 +1,5 @@
+FROM scratch
+COPY data/runtime-root/ /
+COPY bin/csghub-server bin/csghub-portal /app/bin/
+WORKDIR /app
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+docker compose --env-file deploy/dev/.env -f docker-compose.dev.yml ps
+curl --noproxy '*' --fail --silent --output /dev/null --write-out 'Portal HTTP %{http_code}\n' http://127.0.0.1:18090/
+curl --noproxy '*' --fail --silent --output /dev/null --write-out 'Models API HTTP %{http_code}\n' http://127.0.0.1:18080/api/v1/models
+curl --noproxy '*' --fail --silent --output /dev/null --write-out 'Datasets API HTTP %{http_code}\n' http://127.0.0.1:18080/api/v1/datasets

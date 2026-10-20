@@ -36,9 +36,21 @@ go.work.sum
 tmp
 
 # local development files
-/bin/
+/bin/*
+!/bin/*.py
+!/bin/*.cjs
+!/bin/local-up
+!/bin/local-status
 /data/
-/deploy/dev/
+/deploy/dev/*
+!/deploy/dev/.env.example
+!/deploy/dev/Dockerfile.local
+!/deploy/dev/Dockerfile.local.dockerignore
+!/deploy/dev/LOCAL.md
+!/deploy/dev/README.md
+!/deploy/dev/gitaly.config.toml
+!/deploy/dev/nats-server.conf
+!/deploy/dev/server.local.toml
 /docker-compose.dev.yml
 
 # DS_Store

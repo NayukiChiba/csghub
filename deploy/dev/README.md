@@ -1,5 +1,9 @@
 # dev 分支开发环境
 
+当前 Linux 本机环境使用 Docker 运行应用和依赖，统一通过 `127.0.0.1` 访问。
+启动、端口、演示账户、源码构建和 Hugging Face 样本导入请参见 [LOCAL.md](LOCAL.md)。
+下面保留的是原先“Docker 依赖 + 宿主机应用”的开发说明。
+
 这套环境只把稳定依赖放进 Docker；需要改代码的 Portal、CSGHub Server、User Server 和 DataViewer 均在宿主机运行。这样前端断点、Go 断点和热更新不会被容器构建打断。
 
 ## 目录约定
