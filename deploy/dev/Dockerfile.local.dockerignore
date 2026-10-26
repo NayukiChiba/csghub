@@ -1,7 +1,0 @@
-**
-!bin/
-!bin/csghub-server
-!bin/csghub-portal
-!data/
-!data/runtime-root/
-!data/runtime-root/**
