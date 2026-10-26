@@ -27,6 +27,9 @@ services:
       - csghub_etc:/etc/csghub
       - csghub_logs:/var/log/csghub
       - csghub_data:/var/opt/csghub
+      - ./config/bootstrap-temporal.sh:/usr/local/bin/bootstrap-temporal:ro
+    post_start:
+      - command: /bin/sh /usr/local/bin/bootstrap-temporal
     restart: always
     shm_size: '256m'
 
