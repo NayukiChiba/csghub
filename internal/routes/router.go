@@ -241,9 +241,12 @@ func createRender() multitemplate.Renderer {
 
 func setupViewsRouter(engine *gin.Engine, handlersRegistry *HandlersRegistry) {
 	var globalConfig = types.GlobalConfig{
-		ServerBaseUrl: handlersRegistry.Config.StarhubServer.BaseURL,
-		OnPremise:     handlersRegistry.Config.OnPremise,
-		EnableHttps:   handlersRegistry.Config.EnableHttps,
+		ServerBaseUrl: publicServerBaseURL(
+			handlersRegistry.Config.StarhubServer.BaseURL,
+			handlersRegistry.Config.StarhubServer.PublicBaseURL,
+		),
+		OnPremise:   handlersRegistry.Config.OnPremise,
+		EnableHttps: handlersRegistry.Config.EnableHttps,
 	}
 	engine.Use(injectConfig(globalConfig))
 
@@ -268,6 +271,13 @@ func setupViewsRouter(engine *gin.Engine, handlersRegistry *HandlersRegistry) {
 	registerPromptsRoutes(engine, handlersRegistry)
 	registerEvaluationRoutes(engine, handlersRegistry)
 	registerDatapipelinesRoutes(engine, handlersRegistry)
+}
+
+func publicServerBaseURL(baseURL, publicBaseURL string) string {
+	if publicBaseURL != "" {
+		return publicBaseURL
+	}
+	return baseURL
 }
 
 func setupStaticRouter(engine *gin.Engine) {

@@ -26,6 +26,7 @@ You can copy one of these files to `.env` or `.envrc` and modify the values acco
 | Environment Variable | Type | Description | Default Value |
 |---|---|---|---|
 | `CSGHUB_PORTAL_STARHUB_BASE_URL` | String | The URL of the csghub-server service. | `http://localhost:8080` |
+| `CSGHUB_PORTAL_STARHUB_PUBLIC_BASE_URL` | String | Optional browser-facing csghub-server URL. Use it when Portal is accessed through a proxy or tunnel. | `""` |
 | `CSGHUB_PORTAL_STARHUB_API_KEY` | String | The API key for accessing the csghub-server API. | `0c11...` |
 
 ## Database Configuration

@@ -26,6 +26,7 @@
 | 环境变量 | 类型 | 描述 | 默认值 |
 |---|---|---|---|
 | `CSGHUB_PORTAL_STARHUB_BASE_URL` | 字符串 | csghub-server 服务的 URL。 | `http://localhost:8080` |
+| `CSGHUB_PORTAL_STARHUB_PUBLIC_BASE_URL` | 字符串 | 可选的浏览器端 csghub-server URL，在通过反向代理或隧道访问 Portal 时使用。 | `""` |
 | `CSGHUB_PORTAL_STARHUB_API_KEY` | 字符串 | 用于访问 csghub-server API 的密钥。 | `0c11...` |
 
 ## 数据库配置

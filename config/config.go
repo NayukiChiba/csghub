@@ -22,8 +22,9 @@ type Config struct {
 	LoginURL       string `envconfig:"CSGHUB_PORTAL_LOGIN_URL" default:"http://60.205.228.141:8000/login/oauth/authorize?client_id=4ba65e712c5dabca3e48&response_type=code&redirect_uri=http://localhost:8080/api/v1/callback/casdoor&scope=read&state=casdoor"`
 
 	StarhubServer struct {
-		BaseURL string `envconfig:"CSGHUB_PORTAL_STARHUB_BASE_URL" default:"http://localhost:8080"`
-		APIKey  string `envconfig:"CSGHUB_PORTAL_STARHUB_API_KEY" default:"0c11e6e4f2054444374ba3f0b70de4145935a7312289d404814cd5907c6aa93cc65cd35dbf94e04c13a3dedbf51f1694de84240c8acb7238b54a2c3ac8e87c59"`
+		BaseURL       string `envconfig:"CSGHUB_PORTAL_STARHUB_BASE_URL" default:"http://localhost:8080"`
+		PublicBaseURL string `envconfig:"CSGHUB_PORTAL_STARHUB_PUBLIC_BASE_URL" default:""`
+		APIKey        string `envconfig:"CSGHUB_PORTAL_STARHUB_API_KEY" default:"0c11e6e4f2054444374ba3f0b70de4145935a7312289d404814cd5907c6aa93cc65cd35dbf94e04c13a3dedbf51f1694de84240c8acb7238b54a2c3ac8e87c59"`
 	}
 
 	Database struct {
