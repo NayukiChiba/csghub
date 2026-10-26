@@ -139,6 +139,14 @@ describe("RepoCards", () => {
         expect(wrapper.findComponent(ElSelect).exists()).toBe(true);
     });
 
+    it("keeps the dataset tag sidebar within the viewport", () => {
+        const datasetWrapper = createWrapper({ repoType: 'dataset' });
+        const modelWrapper = createWrapper({ repoType: 'model' });
+
+        expect(datasetWrapper.find('.dataset-tag-sidebar--scrollable').exists()).toBe(true);
+        expect(modelWrapper.find('.dataset-tag-sidebar--scrollable').exists()).toBe(false);
+    });
+
     it("calculates correct perPage based on repoType", () => {
         // 模拟不同窗口宽度测试space类型
         const spaceWrapper = createWrapper({ repoType: 'space' });
