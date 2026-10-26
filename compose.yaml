@@ -1,6 +1,6 @@
 services:
   csghub-init:
-    image: registry.opencsg.com/opencsghq/omnibus-csghub:v2.6.0-ce
+    image: ${CSGHUB_IMAGE:-registry.opencsg.com/opencsghq/omnibus-csghub:v2.6.0-ce}
     entrypoint: ['/bin/sh', '-c']
     command:
       - install -d -o 1001 -g 1001 -m 0755 /var/opt/csghub/casdoor/logs
@@ -9,11 +9,12 @@ services:
     restart: 'no'
 
   csghub:
-    image: registry.opencsg.com/opencsghq/omnibus-csghub:v2.6.0-ce
+    image: ${CSGHUB_IMAGE:-registry.opencsg.com/opencsghq/omnibus-csghub:v2.6.0-ce}
     depends_on:
       csghub-init:
         condition: service_completed_successfully
     environment:
+      CSGHUB_PORTAL_STARHUB_PUBLIC_BASE_URL: "${CSGHUB_PUBLIC_URL:-}"
       CSGHUB_OMNIBUS_CONFIG: |
         csghub:
           external_url: "${CSGHUB_EXTERNAL_URL}"
@@ -29,7 +30,9 @@ services:
       - ${CSGHUB_PERSISTENCE_ROOT:-./data/omnibus}/data:/var/opt/csghub
       - ${CSGHUB_PERSISTENCE_ROOT:-./data/omnibus}/.kube:/etc/csghub/.kube:ro
       - ./config/bootstrap-temporal.sh:/usr/local/bin/bootstrap-temporal:ro
+      - ./config/configure-portal-public-url.sh:/usr/local/bin/configure-portal-public-url:ro
     post_start:
       - command: /bin/sh /usr/local/bin/bootstrap-temporal
+      - command: /bin/sh /usr/local/bin/configure-portal-public-url
     restart: always
     shm_size: '256m'
