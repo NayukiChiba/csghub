@@ -1,0 +1,36 @@
+services:
+  csghub-init:
+    image: registry.opencsg.com/opencsghq/omnibus-csghub:v2.6.0-ce
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - install -d -o 1001 -g 1001 -m 0755 /var/opt/csghub/casdoor/logs
+    volumes:
+      - csghub_data:/var/opt/csghub
+    restart: 'no'
+
+  csghub:
+    image: registry.opencsg.com/opencsghq/omnibus-csghub:v2.6.0-ce
+    depends_on:
+      csghub-init:
+        condition: service_completed_successfully
+    environment:
+      CSGHUB_OMNIBUS_CONFIG: |
+        csghub:
+          external_url: "${CSGHUB_EXTERNAL_URL}"
+    ports:
+      - '80:80'
+      - '2222:2222'
+      - '8000:8000'
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - csghub_etc:/etc/csghub
+      - csghub_logs:/var/log/csghub
+      - csghub_data:/var/opt/csghub
+    restart: always
+    shm_size: '256m'
+
+volumes:
+  csghub_etc:
+  csghub_logs:
+  csghub_data:
