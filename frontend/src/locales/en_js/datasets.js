@@ -1,4 +1,10 @@
 export const datasets = {
+  rowSummary: "Total dataset rows: {total}",
+  rowSummaryLoading: "Counting…",
+  rowSummaryFailed: "Unavailable",
+  rowSummaryRetry: "Retry",
+  rowSummaryIncomplete: "Row counts unavailable for {count} datasets",
+
   title: "Datasets",
   placeholder: "Search dataset name",
   newTips:'Datasets added in the last two weeks',
