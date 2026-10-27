@@ -9,6 +9,7 @@ services:
     restart: 'no'
 
   csghub:
+    entrypoint: ['/bin/bash', '/usr/local/bin/omnibus-entrypoint']
     image: ${CSGHUB_IMAGE:-registry.opencsg.com/opencsghq/omnibus-csghub:v2.6.0-ce}
     depends_on:
       csghub-init:
@@ -29,6 +30,7 @@ services:
       - ${CSGHUB_PERSISTENCE_ROOT:-./data/omnibus}/logs:/var/log/csghub
       - ${CSGHUB_PERSISTENCE_ROOT:-./data/omnibus}/data:/var/opt/csghub
       - ${CSGHUB_PERSISTENCE_ROOT:-./data/omnibus}/.kube:/etc/csghub/.kube:ro
+      - ./config/omnibus-entrypoint.sh:/usr/local/bin/omnibus-entrypoint:ro
       - ./config/bootstrap-temporal.sh:/usr/local/bin/bootstrap-temporal:ro
       - ./config/configure-portal-public-url.sh:/usr/local/bin/configure-portal-public-url:ro
       - ./config/wait-for-api.sh:/usr/local/bin/wait-for-api:ro
