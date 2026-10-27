@@ -1,4 +1,10 @@
 export const datasets = {
+  rowSummary: "目前資料集總行數為：{total}",
+  rowSummaryLoading: "統計中…",
+  rowSummaryFailed: "統計失敗",
+  rowSummaryRetry: "重試",
+  rowSummaryIncomplete: "{count} 個資料集尚無可用行數統計",
+
   title: "數據集",
   placeholder: "搜索數據集名稱",
   newTips:'近兩週新增數據集',
