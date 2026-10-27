@@ -235,3 +235,35 @@ describe("RepoCards", () => {
         expect(wrapper.findComponent({ name: 'EmptyModels' }).exists() || wrapper.text().includes('Empty')).toBeTruthy();
     });
 });
+
+
+describe('Dataset filtered row totals', () => {
+    it('shows the summary between the title and search and uses the list filters', async () => {
+        useFetchApi.mockImplementation((url) => ({ json: async () => {
+            if (url.startsWith('/datasets/row-summary?')) return { data: { value: { data: {
+                total_rows: '12345', total_datasets: 3, counted_datasets: 3,
+                uncounted_datasets: 0, complete: true
+            } } } };
+            if (url === '/tags') return { data: { value: { data: { task: [], framework: [], license: [], language: [] } } } };
+            return { data: { value: { data: [], total: 0 } } };
+        } }));
+        window.location.href = 'http://localhost:3000/datasets?search=chat%26tools&tag_category=task&tag_name=qa';
+        const wrapper = createWrapper({ repoType: 'dataset' });
+        await new Promise(resolve => setTimeout(resolve, 30));
+        expect(wrapper.find('[data-testid="dataset-row-summary"]').text()).toContain('12,345');
+        const calls = useFetchApi.mock.calls.map(([url]) => url);
+        const summaryUrl = calls.findLast(url => url.startsWith('/datasets/row-summary?'));
+        const params = new URL(summaryUrl, 'http://localhost').searchParams;
+        expect(params.get('search')).toBe('chat&tools');
+        expect(params.get('tag_name')).toBe('qa');
+        expect(params.has('page')).toBe(false);
+        expect(params.has('per')).toBe(false);
+        expect(wrapper.find('h3').element.nextElementSibling.dataset.testid).toBe('dataset-row-summary');
+        const summaryRequests = () => useFetchApi.mock.calls.filter(([url]) => url.startsWith('/datasets/row-summary?')).length;
+        const before = summaryRequests();
+        wrapper.findComponent(CsgPagination).vm.$emit('currentChange', 2);
+        await new Promise(resolve => setTimeout(resolve, 30));
+        expect(summaryRequests()).toBe(before);
+        wrapper.unmount();
+    });
+});

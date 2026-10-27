@@ -15,7 +15,8 @@
     </div>
     <div class="pt-8 w-full">
       <div class="flex flex-wrap justify-between items-center gap-2">
-        <div class="flex items-center gap-4 flex-nowrap w-auto">
+        <div class="flex items-center gap-4 w-auto"
+          :class="repoType === 'dataset' ? 'flex-wrap' : 'flex-nowrap'">
           <h3 class="text-lg font-normal text-gray-900 flex items-center gap-2">
             <!-- <SvgIcon
               v-if="repoType === 'model'"
@@ -49,6 +50,7 @@
               </span>
             </span>
           </h3>
+          <DatasetRowSummary v-if="repoType === 'dataset'" :query="rowSummaryQuery" />
           <ElInput
             v-model="nameFilterInput"
             class="!w-auto min-w-[180px]"
@@ -175,6 +177,7 @@
   import { Search } from '@element-plus/icons-vue'
   import { ElInput, ElMessage, ElSelect } from 'element-plus'
   import RepoItem from '../shared/RepoItem.vue'
+  import DatasetRowSummary from '../datasets/DatasetRowSummary.vue'
   import ApplicationSpaceItem from '../application_spaces/ApplicationSpaceItem.vue'
   import TagSidebar from '../tags/TagSidebar.vue'
   import CsgPagination from './CsgPagination.vue'
@@ -510,49 +513,40 @@
       }
     }
     
-    let url = `/${props.repoType}s`
-    url = url + `?page=${childCurrent ? childCurrent : currentPage.value}`
-    url = url + `&per=${perPage.value}`
-    url = url + `&search=${nameFilterInput.value}`
-    url = url + `&sort=${sortSelection.value}`
-    if(props.repoType === 'space'){
-      url+= `&sdk=${searchSdk.value}`;
+    const params = new URLSearchParams({
+      page: String(currentPage.value), per: String(perPage.value),
+      search: nameFilterInput.value, sort: sortSelection.value,
+      source: sourceSelection.value === 'all' ? '' : sourceSelection.value
+    })
+    if (props.repoType === 'space') {
+      params.set('sdk', searchSdk.value)
+      if (spaceStatus.value) params.set('status', spaceStatus.value)
     }
-    if (props.repoType === 'space' && spaceStatus.value) {
-      url += `&status=${spaceStatus.value}`
+    if (['inference', 'finetune', 'evaluation'].includes(filterSelection.value)) {
+      params.append('tag_category', 'runtime_framework')
+      params.append('tag_group', filterSelection.value)
     }
-
-    if (filterSelection.value === 'inference') {
-      url = url + `&tag_category=runtime_framework&tag_group=inference`
-    }
-
-    if (filterSelection.value === 'finetune') {
-      url = url + `&tag_category=runtime_framework&tag_group=finetune`
-    }
-
-    if (filterSelection.value === 'evaluation') {
-      url = url + `&tag_category=runtime_framework&tag_group=evaluation`
-    }
-
-    if (filterSelection.value === 'serverless') {
-      url = url + `&list_serverless=true`
-    }
-
-    for (let [category, tags] of Object.entries(activeTags.value)) {
-      if (Array.isArray(tags)) {
-        tags.forEach((tag) => {
-          url = url + `&tag_category=${category}&tag_name=${tag.toLowerCase()}`
-          if(props.repoType === 'model'){
-            url = url + `&tag_group=`
-          }
-        })
+    if (filterSelection.value === 'serverless') params.set('list_serverless', 'true')
+    for (const [category, tags] of Object.entries(activeTags.value)) {
+      if (!Array.isArray(tags)) continue
+      for (const tag of tags) {
+        params.append('tag_category', category)
+        params.append('tag_name', tag.toLowerCase())
+        if (props.repoType === 'model') params.append('tag_group', '')
       }
     }
-
-    url = url + `&source=${sourceSelection.value === 'all' ? '' : sourceSelection.value}`
+    const url = `/${props.repoType}s?${params}`
+    if (props.repoType === 'dataset') {
+      const summaryParams = new URLSearchParams(params)
+      summaryParams.delete('page')
+      summaryParams.delete('per')
+      summaryParams.delete('sort')
+      rowSummaryQuery.value = summaryParams.toString()
+    }
     loadRepos(url)
   }
 
+  const rowSummaryQuery = ref('')
   const lastRequestUrl = ref('')
   const loadingRequest = ref(false)
 
